@@ -24,6 +24,7 @@ If you have difficulty approaching the issue, feel free to ask on the [OpenCode 
 - All PRs must either have satisfactory explanation of how the code is working or the code must be well documented with comments. 
 - PRs should preferably contain additional testing files or video attachment of testing procedure done by you on Remix IDE. 
 - If code is found to contain plagiarised content, judgement will be done on basis of the above documentation only. In absence of the same, strict action will be taken and contestant may be disqualified from OpenCode'22.
+- Don't forget to star ⭐ the repo.
 
 ## Guidelines
 
