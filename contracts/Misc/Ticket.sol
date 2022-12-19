@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 contract TicketCounter {
     address public ticketCounterOwner;
+    int public constant price=30;//Base price of every Ticket is 30 Dollar
     AggregatorV3Interface internal priceFeed;
      /**
      * Network: Goerli
@@ -16,29 +17,28 @@ contract TicketCounter {
             0xD4a33860578De61DBAbDc8BFdb98FD742fA7028e
         );
     }
-    //Ticket Structure 
     struct Ticket{
         uint id;
         address owner;
         string to;
         string from;
         uint timestamp;
-        int256 price;
+        
     }
 
     mapping(uint=>Ticket) public tickets;
     uint public ticketID;
-
-    //Ticket Book Function which has hardcode price 150
     function bookTicket(string memory _to, string memory _from) public payable returns(bool){
         ticketID++;
+        int usd= _getEthLatestPrice();
+        int val = int(msg.value)*usd;// Here we conver ether to usd 
+        require(val>price,"Price Should Be 30 Dollar");// here we check weather user cross that base price or not 
         
         tickets[ticketID]=Ticket({  id: ticketID,
             owner: msg.sender,
             to: _to,
             from: _from,
-            timestamp: block.timestamp,
-            price:150
+            timestamp: block.timestamp
         });
 
         return true;
@@ -54,11 +54,11 @@ contract TicketCounter {
     }
 
 
-    // This function give price of eth in usd   
+    // This function give price of eth in usd      
     function _getEthLatestPrice() public view returns(int){
        (
             ,
-             int price ,
+            int price,
             ,
             ,
 
