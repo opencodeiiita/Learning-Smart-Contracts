@@ -9,11 +9,14 @@ This is a repo being maintained during OpenCode'22 as an archive of smart contra
 3. Install Metamask and create an Ethereum wallet for yourself. 
 4. You may also use [Remix](https://remix.ethereum.org/) for writing and testing smart contracts. 
 
+> **_NOTE:_**  If you're adding a .sol file in any folder in the repo, remember to run `truffle compile` in the command line. It will compile the contract and point out any errors you've made in your contract.
+
 You can also setup Solidity language support in your IDE for better development experience. 
 
 ## Claim an issue
 
 Comment on the issue to claim it. In case of no activity on the issue even after 2 days, the issue will be reassigned. 
+
 
 ## Communication 
 
