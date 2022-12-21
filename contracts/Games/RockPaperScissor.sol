@@ -3,8 +3,10 @@ pragma solidity >=0.7.0 <0.9.0;
 
 contract RockPaperScissor {
 
-    address payable player1;
-    address payable player2;
+    address payable zeroAddress = payable(0x0);
+    address payable player1=zeroAddress;
+    address payable player2=zeroAddress;
+    address owner;
 
     uint bet1=0;
     uint bet2=0;
@@ -17,9 +19,22 @@ contract RockPaperScissor {
 
     }
 
-    constructor(address payable _player2) public {
-        player1=(payable(msg.sender));
-        player2=_player2;
+    constructor() public {
+        owner=msg.sender;
+    }
+
+    function Enter() external returns(uint){
+        require(msg.sender!=owner,"The owner cannot enter the game");
+        if(player1==zeroAddress){ 
+            player1 = payable(msg.sender);
+            return 1;
+        }
+        else if(player2==zeroAddress){ 
+            require(msg.sender!=player1,"You have already entered the game");
+            player2 = payable(msg.sender);
+            return 2;
+        }
+        else return 0;
     }
 
     modifier onlyPlayer1 {
@@ -83,7 +98,7 @@ contract RockPaperScissor {
             require(sent, "Failed to send Ether");
             (bool sent2, bytes memory data2) = player2.call{value: bet2}("");
             require(sent2, "Failed to send Ether");
-            return payable(0x0);
+            return zeroAddress;
         }
     }
 }
