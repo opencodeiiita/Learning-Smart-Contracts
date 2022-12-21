@@ -23,12 +23,12 @@ contract RockPaperScissor {
     }
 
     modifier onlyPlayer1 {
-      require(msg.sender == player1);
+      require(msg.sender == player1,"Only player 1 can bet here");
       _;
     }
 
     function betPlayer1(string memory _rps) public payable onlyPlayer1 {
-        require(msg.value>0);
+        require(msg.value>0,"Transferring ether is necessary");
         bet1=msg.value;
         if(keccak256(abi.encodePacked(_rps))==keccak256(abi.encodePacked("rock"))) state1=game.rock;
         else if(keccak256(abi.encodePacked(_rps))==keccak256(abi.encodePacked("paper"))) state1=game.paper;
@@ -36,12 +36,12 @@ contract RockPaperScissor {
     }
 
     modifier onlyPlayer2 {
-      require(msg.sender == player2);
+      require(msg.sender == player2,"Only player 2 can bet here");
       _;
     }
 
     function betPlayer2(string memory _rps) public payable onlyPlayer2 {
-        require(msg.value>0);
+        require(msg.value>0,"Transferring ether is necessary");
         bet2=msg.value;
         if(keccak256(abi.encodePacked(_rps))==keccak256(abi.encodePacked("rock"))) state2=game.rock;
         else if(keccak256(abi.encodePacked(_rps))==keccak256(abi.encodePacked("paper"))) state2=game.paper;
@@ -68,16 +68,14 @@ contract RockPaperScissor {
     }
 
     function play() external payable returns(address payable){
-        require((bet1>0) && (bet2>0));
+        require((bet1>0) && (bet2>0),"Both players have still not kept their bet");
         uint winner = determineWinner();
         if(winner==1){
-            (bool sent, bytes memory data) = player1.call{value: bet1+bet2}("");
-            require(sent, "Failed to send Ether");
+            player1.transfer(address(this).balance);
             return player1;
         }
         if(winner==2){
-            (bool sent, bytes memory data) = player2.call{value: bet1+bet2}("");
-            require(sent, "Failed to send Ether");
+            player2.transfer(address(this).balance);
             return player2;
         }
         if(winner==0){
