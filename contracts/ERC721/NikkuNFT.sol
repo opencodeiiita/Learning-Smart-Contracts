@@ -23,3 +23,6 @@ contract NameNFT is ERC721URIStorage {
         return newItemId;
     }
 }
+// Etherscan Link : https://goerli.etherscan.io/address/0xdf7a1263e64e735a00F67db0f8d2Ea2EF17cB801
+// OpenSea Link: https://testnets.opensea.io/assets/goerli/0xdf7a1263e64e735a00f67db0f8d2ea2ef17cb801/0
+// IPFS metadata link : https://gateway.pinata.cloud/ipfs/QmUiq6XLMUE3PhfQcYqA8FoGUbnbQNzSe9H1xiTzndbHpT
