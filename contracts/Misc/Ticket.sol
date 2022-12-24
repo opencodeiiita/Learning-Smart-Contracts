@@ -4,8 +4,8 @@ pragma solidity ^0.8.9;
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 contract TicketCounter {
     address public ticketCounterOwner;
-    int public constant price=30;//Base price of every Ticket is 30 Dollar
-    AggregatorV3Interface internal priceFeed;
+    uint public constant price=30*1e18;//Base price of every Ticket is 30 Dollar
+    AggregatorV3Interface priceFeed;
      /**
      * Network: Goerli
      * Aggregator: ETH/USD
@@ -23,17 +23,16 @@ contract TicketCounter {
         string to;
         string from;
         uint timestamp;
-        
+
     }
 
     mapping(uint=>Ticket) public tickets;
     uint public ticketID;
     function bookTicket(string memory _to, string memory _from) public payable returns(bool){
         ticketID++;
-        int usd= _getEthLatestPrice();
-        int val = int(msg.value)*usd;// Here we conver ether to usd 
-        require(val>price,"Price Should Be 30 Dollar");// here we check weather user cross that base price or not 
-        
+        uint val = GetValueInDollar(msg.value);// Here we conver ether to usd
+        require(val>price,"Price Should Be 30 Dollar");// here we check weather user cross that base price or not
+
         tickets[ticketID]=Ticket({  id: ticketID,
             owner: msg.sender,
             to: _to,
@@ -45,7 +44,7 @@ contract TicketCounter {
     }
 
     function returnOwner(uint _ticketId) public view ticketExist(_ticketId) returns(address){
-        
+
         return tickets[_ticketId].owner;
     }
 
@@ -54,17 +53,22 @@ contract TicketCounter {
     }
 
 
-    // This function give price of eth in usd      
-    function _getEthLatestPrice() public view returns(int){
-       (
-            ,
-            int price,
-            ,
-            ,
+    function _getEthLatestPrice() public view returns(uint){
+       (,int256 price,,,) = priceFeed.latestRoundData();
+        return uint(price)*1e10;
+    }
 
-        ) = priceFeed.latestRoundData();
+    // This function give price of eth in usd
+    function GetValueInDollar(uint _ethAmount) public view returns(uint){
+        uint ValuePrice = _getEthLatestPrice();
+        uint AmountinDollars =(ValuePrice * _ethAmount) /1e18;
+        return AmountinDollars;
+    }
 
-        return (price/(10**8));
+    function howMuchToPay() public view returns(uint){
+        uint valuePrice = _getEthLatestPrice();
+        uint val = (price*1e18)/valuePrice;
+        return val;
     }
 
     modifier ticketExist(uint _ticketId){
