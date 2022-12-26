@@ -23,8 +23,9 @@ contract Marriage{
     }
 
     // The function through which a person can propose another person
-    function propose(address payable _proposed) public {
+    function propose(address payable _proposed) public payable {
         require(proposer==zeroAddress,"Proposal has already been made");
+        require(msg.value>0);
         proposer=payable(msg.sender);
         proposed=_proposed;
     }
@@ -35,8 +36,9 @@ contract Marriage{
     }
 
     // The person who has been proposed can accept the offer
-    function acceptProposal() public {
+    function acceptProposal() public payable {
         require(payable(msg.sender)==proposed,"You are not the one who was proposed");
+        require(msg.value>0);
         status=state.Married;
     }
 
@@ -44,19 +46,6 @@ contract Marriage{
     function returnJointAccountAddress() public view returns(address){
         require((payable(msg.sender)==proposed) || (payable(msg.sender)==proposer),"You are not involved in the marriage");
         return address(this);
-    }
-
-    // The couple deposits money for their joint account
-    function Deposit() public payable {
-        require(keccak256(abi.encodePacked(status))==keccak256(abi.encodePacked("Married")),"The status of contract is not married");
-        require((payable(msg.sender)==proposed) || (payable(msg.sender)==proposer),"You are not involved in the marriage");
-        require(msg.value>0,"Deposit non-zero ether");
-        if((payable(msg.sender)==proposed)){
-            deposit2=true;
-        }
-        if((payable(msg.sender)==proposer)){
-            deposit1=true;
-        }
     }
 
     // One of them could ask for divorce
