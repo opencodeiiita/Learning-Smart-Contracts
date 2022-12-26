@@ -64,15 +64,11 @@ contract Marriage{
         if(divorcer==proposed) divorcee=proposer;
     }
 
-    function acceptDivorce() public {
+    function acceptDivorce() public payable {
         require(payable(msg.sender)==divorcee,"You are not the one who was asked for divorce");
         status=state.Divorced;
-        split();
-    }
-
-    // Called from the function only, transfers the joint account balance to the ex-couple's accounts
-    function split() public payable {
-        proposed.transfer((address(this).balance)/2);
-        proposer.transfer((address(this).balance)/2);
+        uint val = (address(this).balance);
+        proposed.transfer(val/2);
+        proposer.transfer(val/2);
     }
 }
