@@ -11,8 +11,6 @@ contract Marriage{
     address payable proposed=zeroAddress;
     address payable divorcer=zeroAddress;
     address payable divorcee=zeroAddress;
-    bool deposit1=false;
-    bool deposit2=false;
 
     receive() external payable{
 
@@ -42,6 +40,14 @@ contract Marriage{
         status=state.Married;
     }
 
+    // The person who has been proposed can reject the offer
+    function denyProposal() public payable{
+        require(payable(msg.sender)==proposed,"You are not the one who was proposed");
+        proposer.transfer(address(this).balance);
+        proposer=zeroAddress;
+        proposed=zeroAddress;
+    }
+
     // Returns the address of this contract
     function returnJointAccountAddress() public view returns(address){
         require((payable(msg.sender)==proposed) || (payable(msg.sender)==proposer),"You are not involved in the marriage");
@@ -50,7 +56,7 @@ contract Marriage{
 
     // One of them could ask for divorce
     function Divorce() public {
-        require(deposit1 && deposit2,"You cannot ask for divorce if joint account not made");
+        require(status==state.Married,"The status of contract is not married");
         require((payable(msg.sender)==proposed)||(payable(msg.sender)==proposer),"You are not involved in the marriage");
         require(divorcer==zeroAddress,"Divorce application already made");
         divorcer=payable(msg.sender);
