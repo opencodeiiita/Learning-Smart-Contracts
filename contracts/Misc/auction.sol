@@ -25,7 +25,7 @@ contract Auction {
         require(msg.sender==auctioneer,"Only owner can start the auction");
         require(!started, "started");//can be called only once by the auctioneer
         started=true;
-        auctionEndTime= uint(block.timestamp + 600);//auction will run only for 3 days(259200 seconds)
+        auctionEndTime= uint(block.timestamp + 259200);//auction will run only for 3 days(259200 seconds)
     }
 
 
