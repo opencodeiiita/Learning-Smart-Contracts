@@ -6,6 +6,10 @@ Primary is a contract where you can deposit and withdraw ETH.
 This contract is vulnerable to a certain hack. Explain the hack and find the solution(s).
 */
 
+// The problem with this code is that whenever a contract receives ether the fallback function is called,
+// therefore the balance of the contract is not set to zero and ether keeps getting transferred to the 
+// external contract till the balance of primary contract becomes less than that stored in mapping for external.
+
 contract Primary {
     mapping(address => uint) public balances; 
 
@@ -17,10 +21,15 @@ contract Primary {
         uint bal = balances[msg.sender];
         require(bal > 0);
 
+        balances[msg.sender] = 0;
+        // Here setting the balance zero before the transaction ensures this function runs only once.
+
         (bool sent, ) = msg.sender.call{value: bal}("");
         require(sent, "Failed to send Ether");
 
-        balances[msg.sender] = 0;
+        if(!sent) balances[msg.sender] = bal;
+        // To provide security when the transaction fails and not cut ether unfairly
+        // balances[msg.sender] = 0;
     }
 
     // Helper function to check the balance of this contract
