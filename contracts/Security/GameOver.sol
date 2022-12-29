@@ -10,11 +10,13 @@ pragma solidity ^0.8.17;
 contract MyGame {
     uint public target = 5 ether;
     address public winner;
-
+    uint public balance;
+    // manually maintaining a balance that only updates when the deposit function is called
     function deposit() public payable {
         require(msg.value == 1 ether, "You can only send 1 Ether");
 
-        uint balance = address(this).balance;
+        balance += msg.value;
+        // uint balance = address(this).balance;
         require(balance <= target, "Game is over");
 
         if (balance == target) {
@@ -24,9 +26,10 @@ contract MyGame {
 
     function claimReward() public {
         require(msg.sender == winner, "Not winner");
-
-        (bool sent, ) = msg.sender.call{value: address(this).balance}("");
+        
+        (bool sent, ) = msg.sender.call{value: balance}("");
         require(sent, "Failed to send Ether");
+        balance = 0;
     }
 }
 
