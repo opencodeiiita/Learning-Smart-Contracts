@@ -42,8 +42,6 @@ contract Escrow{
 
     //Function called by buyer once it has recieved the Asset
     function confirm_delivery() public onlyBuyer{
-         require(msg.sender!=seller,"Only buyer can confirm delivery");
-        
         require(deposited==true,"First make the required payment");
         delivered=true;
     }
