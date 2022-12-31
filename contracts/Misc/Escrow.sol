@@ -3,18 +3,21 @@
 pragma solidity ^0.8.17;
 
 contract Escrow{
-
+    address public buyer;
     address payable public seller;//seller made payable so that ethers can be transferred to its address
     //variable of current state of escrow
     bool deposited=false;
     bool delivered=false;
     bool withdrawn=false;
     uint256 public valueOfAsset;
-    uint256 public amount=0;
 
     //modifier made to make functions to be called only by seller or buyer according to the requirement
     modifier onlySeller() {
         require(msg.sender == seller, "Only seller can call this method");
+        _;
+    }
+    modifier onlyBuyer() {
+        require(msg.sender == buyer, "Only buyer can call this method");
         _;
     }
 
@@ -30,16 +33,17 @@ contract Escrow{
     //Only the buyer can call this function and this will transfer funds from his account to the contract
     function deposit() public payable  {
         require(msg.sender!=seller,"seller cannot be buyer");
+        buyer=msg.sender;
         //Each time buyer call this function, the deposit is added to the total amount
-        amount+= msg.value;
+        require(msg.value==valueOfAsset,"Please make complete payment");
         deposited=true;
         emit Deposited(msg.sender,msg.value);
     }
 
     //Function called by buyer once it has recieved the Asset
-    function confirm_delivery() public{
+    function confirm_delivery() public onlyBuyer{
          require(msg.sender!=seller,"Only buyer can confirm delivery");
-        require(amount==valueOfAsset,"Please make complete payment");
+        
         require(deposited==true,"First make the required payment");
         delivered=true;
     }
@@ -49,9 +53,9 @@ contract Escrow{
     function withdraw() public payable onlySeller{
         require(delivered==true,"Asset not transferred yet");//It can withdraw only when asset has been transferred
         require(!withdrawn,"Already withdrawn");
-        uint256 payment = amount;
-        amount = 0;//to ensure that amount is withdrawn only once
-        seller.transfer(payment);
+        //to ensure that amount is withdrawn only once
+        seller.transfer(valueOfAsset);
+        valueOfAsset=0;
         withdrawn=true;
         emit Withdrawn(msg.sender,msg.value);
     }
