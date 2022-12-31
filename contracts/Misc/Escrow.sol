@@ -10,15 +10,10 @@ contract Escrow{
     bool deposited=false;
     bool delivered=false;
     bool withdrawn=false;
-    uint256 amount=0;
+    uint256 public valueOfAsset;
+    uint256 public amount=0;
 
-    //modifiers made to make functions to be called only by seller or buyer according to the requirement
-
-    modifier onlyBuyer() {
-        require(msg.sender == buyer, "Only buyer can call this method");
-        _;
-    }
-
+    //modifier made to make functions to be called only by seller or buyer according to the requirement
     modifier onlySeller() {
         require(msg.sender == seller, "Only seller can call this method");
         _;
@@ -28,13 +23,13 @@ contract Escrow{
     event Deposited(address buyer, uint256 amount);
     event Withdrawn(address seller, uint256 amount);
 
-    constructor(address _buyer, address payable _seller) {
-        buyer = _buyer;
-        seller = _seller;
+    constructor(uint256 value) {
+        seller = payable(msg.sender);
+        valueOfAsset=value*10**18;
     }     
 
     //Only the buyer can call this function and this will transfer funds from his account to the contract
-    function deposit() public onlyBuyer payable  {
+    function deposit() public payable  {
         require(msg.sender!=seller,"seller cannot be buyer");
         //Each time buyer call this function, the deposit is added to the total amount
         amount+= msg.value;
@@ -43,7 +38,9 @@ contract Escrow{
     }
 
     //Function called by buyer once it has recieved the Asset
-    function confirm_delivery() public onlyBuyer{
+    function confirm_delivery() public{
+         require(msg.sender!=seller,"Only buyer can confirm delivery");
+        require(amount==valueOfAsset,"Please make complete payment");
         require(deposited==true,"First make the required payment");
         delivered=true;
     }
