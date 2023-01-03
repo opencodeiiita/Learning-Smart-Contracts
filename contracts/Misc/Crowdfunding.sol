@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 contract Crowdfunding{
     uint fundingEnds;
     uint votingEnds;
+    bool votingStarted=false;
     uint fundingTarget;
     uint totalDonors=0;
     uint votes=0;
@@ -18,7 +19,6 @@ contract Crowdfunding{
     constructor(uint target,uint time){
         fundingTarget = target;
         fundingEnds = block.timestamp + time;
-        votingEnds = fundingEnds + 1 minutes;
         fundraiser = msg.sender;
     }
 
@@ -30,8 +30,16 @@ contract Crowdfunding{
         donations[msg.sender]+=msg.value;
     }
 
-    function vote(uint _vote) public {  // 0 for against 1 for support
+    function startVoting() public {
+        require(msg.sender==fundraiser,"You are not the fundraiser");
         require(block.timestamp>fundingEnds,"The funding period has still not ended");
+        require(!votingStarted,"Voting period is ongoing");
+        votingEnds = block.timestamp + 1 days;
+        votingStarted=true;
+    }
+
+    function vote(uint _vote) public {  // 0 for against 1 for support
+        require(votingStarted,"The voting period has still not started");
         require(block.timestamp<votingEnds,"The voting period has ended");
         require(msg.sender!=fundraiser,"The fundraiser cant vote");
         require(donations[msg.sender]>0,"You are not allowed to vote in this contract");
@@ -41,11 +49,13 @@ contract Crowdfunding{
     }
 
     function withdraw() public payable {
+        require(votingStarted,"The voting has not begun yet");
         require(block.timestamp>votingEnds,"The voting period has still not ended");
         require((2*votes)<=totalDonors,"The fundraiser has won the voting");
         require(donations[msg.sender]>0,"You either did not donate or already have withdrawn the amount");
 
         uint val = donations[msg.sender];
+        donations[msg.sender]=0;
         (bool sent, ) = msg.sender.call{value: val}("");
         require(sent, "Failed to send Ether");
 
@@ -61,5 +71,11 @@ contract Crowdfunding{
 
     function getTargetAmount() public view returns(uint){
         return fundingTarget;
+    }
+
+    function getVotingStatus() public view returns(uint){
+        require(votingStarted,"Voting has still not started");
+        uint percent = ((votes*100)/totalDonors);
+        return percent;
     }
 }
