@@ -2,22 +2,32 @@
 
 pragma solidity ^0.8.16;
 
+interface IERC721{
+    function transferFrom( address from, address to, uint nftId) external;
+}
+
 contract Auction {
     //auctioneer is made payable so that ethers can be transferred to his account 
     address payable public immutable auctioneer;
     uint public auctionEndTime;
+    IERC721 public immutable nft;
+    uint public immutable nftId;
 
     // variables of current state of auction
     address public highestBidder;
     uint public highestBid;
+    uint public basePrice;//minimum price below which seller will not sell his nft
     bool public started;
     bool public ended;
 
     //a data structure to store value of bids of all the bidders with key as their respective address
     mapping(address => uint) public allBids;
 
-    constructor(address payable _auctioneer) {
-        auctioneer = _auctioneer;
+    constructor(uint _basePrice, address _nft, uint _nftId) {
+        auctioneer = payable(msg.sender);
+        basePrice=_basePrice*10**18;
+        nft=IERC721(_nft);
+        nftId=_nftId;
     }
 
     //function called by auctioneer to start the auction
@@ -25,6 +35,7 @@ contract Auction {
         require(msg.sender==auctioneer,"Only owner can start the auction");
         require(!started, "started");//can be called only once by the auctioneer
         started=true;
+        nft.transferFrom(auctioneer,address(this),nftId);
         auctionEndTime= uint(block.timestamp + 259200);//auction will run only for 3 days(259200 seconds)
     }
 
@@ -35,6 +46,7 @@ contract Auction {
         require(started, "Auction not yet started");//users can bid only when auction has started
         require(block.timestamp < auctionEndTime, "Auction has ended");//no user can bid after auction has ended
         require((msg.value+allBids[msg.sender])> highestBid, "Total bid is not more than the highest bid");
+        require((msg.value+allBids[msg.sender])>= basePrice, "Bid should be at least equal to baseprice");
 
         highestBidder = msg.sender;//address of highestBidder updated is there is new bid which exceeds highestBid
         highestBid = msg.value+allBids[msg.sender];
@@ -66,6 +78,7 @@ contract Auction {
             revert("The function auction ended has already been called");//to ensure that auctioneer gets the highestBid amount only once
         }
         ended = true;
+        nft.transferFrom(address(this),highestBidder,nftId);//nft is transferred to the highest bidder 
         auctioneer.transfer(highestBid);//highestBid is transferred to the auctioneer's account
     }
     
