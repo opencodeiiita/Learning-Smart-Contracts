@@ -10,6 +10,7 @@ contract Multi_Signature{
     bool confirm=false;
     address zeroAddress=address(0x0);
     address requester=zeroAddress;
+    uint amount=0;
     constructor(address[] memory _owners){
         for(uint i=0 ; i<_owners.length ; i++){
             owners[_owners[i]]=true;
@@ -26,13 +27,15 @@ contract Multi_Signature{
       _;
     }
 
-    function deposit() public payable onlyOwners{
+    function deposit() public payable{
        require(msg.value>0,"You have not deposit any money");
     }
 
-    function withdrawalRequest() public onlyOwners{
+    function withdrawalRequest(uint _amount) public onlyOwners{
         require(requester==zeroAddress,"Someone has already made a request");
+        require(_amount<address(this).balance,"Not enough balance in the contract");
         requester=msg.sender;
+        amount=_amount;
         votes=0;
         oppose=0;
         confirm=false;
@@ -50,7 +53,7 @@ contract Multi_Signature{
     function transact() public payable{
         require(msg.sender==requester,"You are not the one who made the request");
         require(confirm,"The majority has not voted in your favor");
-        (bool sent, ) = requester.call{value: address(this).balance}("");
+        (bool sent, ) = requester.call{value: amount}("");
         require(sent, "Failed to send Ether");
         requester=zeroAddress;
     }
